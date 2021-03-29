@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+    <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.css" />
+    <style>
+        body {
+            padding: 25px;
+        }
+        h1 {
+            margin-bottom: 0.25em;
+            margin-top: 0.5em;
+        }
+    </style>
+</head>
+<body>
+    {{ range $i, $habit := . }}
+    <h1>{{ $habit.Name }}</h1>
+    <div id="cal-{{ $habit.ID }}"></div>
+    <script type="text/javascript">
+        var cal{{ $i }} = new CalHeatMap();
+        cal{{ $i }}.init({
+            itemSelector: "#cal-{{ $habit.ID }}",
+            domain: "month",
+            subDomain: "day",
+            data: "/logs?habit_id={{ $habit.ID }}",
+            start: new Date(2021, 0),
+            cellSize: 10,
+            domainGutter: 10,
+	        tooltip: true,
+            displayLegend: false,
+            onClick: function(date, nb) {
+                fetch("/logs/up?habit_id={{ $habit.ID }}&unit={{ $habit.Goal.UnitType }}&target_date="+date.toISOString()).
+                then((value) => {
+                    cal{{ $i }}.update("/logs?habit_id={{ $habit.ID }}");
+                }); 
+            }
+        });
+    </script>
+    {{ end }}
+</body>
+</html>
